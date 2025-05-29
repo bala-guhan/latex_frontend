@@ -10,7 +10,7 @@ export default function App() {
   }
 
   const handleConvert = () => {
-    fetch("http://localhost:8000/convert", {
+    fetch("https://latex-backend-0k75.onrender.com/convert", {
       method: "POST",
       body: JSON.stringify({ input }),
       headers: { "Content-Type": "application/json" }
