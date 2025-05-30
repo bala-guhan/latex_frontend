@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
-        'fira-code': ['Fira Code', 'monospace'],
+        fira: ['Fira Code', 'monospace'],
       },
     },
   },
