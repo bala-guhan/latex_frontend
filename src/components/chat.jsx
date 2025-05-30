@@ -3,6 +3,8 @@ import axios from 'axios';
 //eslint-disable-next-line
 import { motion } from 'framer-motion';
 
+const BACKEND_URL = 'https://latex-backend-0k75.onrender.com';
+
 const Chat = ({ sessionId }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -13,7 +15,7 @@ const Chat = ({ sessionId }) => {
         if (input.trim() && !isLoading && sessionId) {
             try {
                 setIsLoading(true);
-                const response = await axios.post('http://localhost:8000/chat', {
+                const response = await axios.post(`${BACKEND_URL}/chat`, {
                     message: input,
                     session_id: sessionId
                 });

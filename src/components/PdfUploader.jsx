@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 
+const BACKEND_URL = 'https://latex-backend-0k75.onrender.com';
+
 const PdfUploader = ({ setSessionId }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
@@ -43,7 +45,7 @@ const PdfUploader = ({ setSessionId }) => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await axios.post('http://localhost:8000/upload', formData, {
+            const response = await axios.post(`${BACKEND_URL}/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
