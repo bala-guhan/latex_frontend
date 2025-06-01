@@ -54,7 +54,7 @@ const Chat = ({ sessionId }) => {
                             className={`mb-4 p-4 rounded-lg ${
                                 message.sender === 'user' 
                                     ? 'bg-black text-white ml-auto border border-white' 
-                                    : 'bg-black-100 text-black'
+                                    : 'bg-black-100 text-white border border-white'
                             } max-w-[80%] ${message.sender === 'user' ? 'ml-auto' : 'mr-auto'}`}
                         >
                             {message.text}

@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
+//eslint-disable-next-line
+import { motion } from 'framer-motion';
 
 const BACKEND_URL = 'https://latex-backend-0k75.onrender.com';
 
@@ -7,6 +9,8 @@ const PdfUploader = ({ setSessionId }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadStatus, setUploadStatus] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [processingStatus, setProcessingStatus] = useState('');
 
     const handleDragOver = useCallback((e) => {
         e.preventDefault();
@@ -41,6 +45,8 @@ const PdfUploader = ({ setSessionId }) => {
         try {
             setIsUploading(true);
             setUploadStatus('Uploading...');
+            setUploadProgress(0);
+            setProcessingStatus('');
             
             const formData = new FormData();
             formData.append('file', file);
@@ -49,15 +55,45 @@ const PdfUploader = ({ setSessionId }) => {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(percentCompleted);
+                }
             });
 
             if (response.data && response.data.session_id) {
-                setSessionId(response.data.session_id);
+                setUploadProgress(100);
+                setUploadStatus('Processing PDF...');
+                setProcessingStatus('Reading and indexing document...');
+                
+                // Poll for processing status
+                const checkProcessingStatus = async () => {
+                    try {
+                        const statusResponse = await axios.get(`${BACKEND_URL}/processing-status/${response.data.session_id}`);
+                        if (statusResponse.data.status === 'completed') {
+                            setSessionId(response.data.session_id);
+                            setUploadStatus('Ready for chat!');
+                            setProcessingStatus('');
+                        } else if (statusResponse.data.status === 'processing') {
+                            setProcessingStatus(statusResponse.data.message || 'Processing...');
+                            setTimeout(checkProcessingStatus, 1000);
+                        } else {
+                            setUploadStatus('Error processing PDF');
+                            setProcessingStatus('');
+                        }
+                    } catch (error) {
+                        console.error('Error checking processing status:', error);
+                        setUploadStatus('Error checking processing status');
+                        setProcessingStatus('');
+                    }
+                };
+                
+                checkProcessingStatus();
             }
-            setUploadStatus('Upload successful!');
         } catch (error) {
             console.error('Upload error:', error);
             setUploadStatus('Upload failed. Please try again.');
+            setProcessingStatus('');
         } finally {
             setIsUploading(false);
         }
@@ -98,17 +134,45 @@ const PdfUploader = ({ setSessionId }) => {
                 </label>
             </div>
 
-            {uploadStatus && (
-                <div className={`mt-4 p-3 rounded-lg font-fira ${
-                    uploadStatus.includes('successful') 
-                        ? 'bg-green-900 text-green-200' 
-                        : uploadStatus.includes('failed') 
-                            ? 'bg-red-900 text-red-200'
-                            : 'bg-gray-800 text-gray-200'
-                }`}>
-                    {uploadStatus}
+            {(uploadStatus || processingStatus) && (
+                <div className="mt-4 w-full max-w-md">
+                    {uploadProgress > 0 && uploadProgress < 100 && (
+                        <div className="w-full bg-gray-700 rounded-full h-2.5 mb-2">
+                            <motion.div
+                                className="bg-white h-2.5 rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${uploadProgress}%` }}
+                                transition={{ duration: 0.3 }}
+                            />
+                        </div>
+                    )}
+                    <div className={`p-3 rounded-lg font-fira text-center ${
+                        uploadStatus.includes('successful') || uploadStatus.includes('Ready')
+                            ? 'bg-green-900 text-green-200' 
+                            : uploadStatus.includes('failed') || uploadStatus.includes('Error')
+                                ? 'bg-red-900 text-red-200'
+                                : 'bg-gray-800 text-gray-200'
+                    }`}>
+                        {uploadStatus}
+                        {processingStatus && (
+                            <div className="mt-2 text-sm">
+                                <motion.div
+                                    className="inline-block w-3 h-3 bg-white rounded-full mr-2"
+                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                />
+                                {processingStatus}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
+
+            <div className="mt-4 ">
+                <p className="text-white font-fira text-center mb-2">
+                    More formats coming soon! (docx, txt, etc.)
+                </p>
+            </div>
         </div>
     );
 };

@@ -7,7 +7,13 @@ function App() {
   const [sessionId, setSessionId] = useState(null);
 
   return (
+    <div>
+    <div className='text-5xl font-bold bg-black text-white font-fira text-center pt-10'>
+        <h2>WizXAi</h2>
+        <p className='text-xl font-semibold'>Create your own AI assistant for your Data</p>
+      </div>
     <div className="min-h-screen w-full bg-black flex items-center justify-center">
+      
       <div className="w-full max-w-7xl h-[90vh] flex flex-row gap-8 items-center justify-center">
         {/* PDF Uploader - Left Side */}
         <div className="flex-shrink-0 flex items-center justify-center h-full">
@@ -22,6 +28,7 @@ function App() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
